@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/isaacs/tmatch/issues"
   },
-  "homepage": "https://github.com/isaacs/tmatch#readme"
+  "homepage": "https://github.com/isaacs/tmatch#readme",
+  "devDependencies": {
+    "tap": "^1.4.1"
+  }
 }
