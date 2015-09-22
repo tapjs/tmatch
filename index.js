@@ -53,6 +53,9 @@ function match_ (obj, pattern, ca, cb) {
   } else if (typeof obj === 'string' && pattern instanceof RegExp) {
     return pattern.test(obj)
 
+  } else if (typeof obj === 'string' && typeof pattern === 'string' && pattern) {
+    return obj.indexOf(pattern) !== -1
+
   } else if (typeof obj !== 'object' || typeof pattern !== 'object') {
     return false
 
@@ -111,4 +114,5 @@ function match_ (obj, pattern, ca, cb) {
 
     return true
   }
+  return false
 }

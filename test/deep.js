@@ -178,3 +178,12 @@ test('regexps match strings', function (t) {
   t.notOk(match(x, y))
   t.end()
 })
+
+test('partial strings match on indexOf', function (t) {
+  var x = { one: 'String' }
+  var y = { one: 'rin' }
+
+  t.ok(match(x, y))
+  t.notOk(match(y, x))
+  t.end()
+})
