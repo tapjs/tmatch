@@ -9,6 +9,10 @@ test("shouldn't care about key order and types", function (t) {
 
 test('should notice objects with different shapes', function (t) {
   t.notOk(match(
+    { a: 1, b: 'a thing' },
+    { a: 1, b: undefined }
+  ))
+  t.ok(match(
     { a: 1 },
     { a: 1, b: undefined }
   ))

@@ -94,9 +94,6 @@ function match_ (obj, pattern, ca, cb) {
     // don't bother with stack acrobatics if there's nothing there
     if (kobj.length === 0 && kpat.length === 0) return true
 
-    // ok for the object to have extra fields, but not the pattern
-    if (kobj.length < kpat.length) return false
-
     // if we've seen this exact pattern and object already, then
     // it means that pattern and obj have matching cyclicalness
     // however, non-cyclical patterns can match cyclical objects
