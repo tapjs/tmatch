@@ -42,24 +42,34 @@ try {
    4. Ensure that all of the associated values match, recursively.
 */
 
+var log = (/\btmatch\b/.test(process.env.NODE_DEBUG || '')) ?
+  console.error : function () {}
+
 function match_ (obj, pattern, ca, cb) {
+  log('TMATCH', typeof obj, pattern)
   /*eslint eqeqeq:0*/
   if (typeof obj !== 'object' && typeof pattern !== 'object' && obj == pattern) {
+    log('TMATCH same object, true')
     return true
 
   } else if (obj === null || pattern === null) {
+    log('TMATCH null test')
     return obj == pattern
 
   } else if (typeof obj === 'string' && pattern instanceof RegExp) {
+    log('TMATCH string~=regexp test')
     return pattern.test(obj)
 
   } else if (typeof obj === 'string' && typeof pattern === 'string' && pattern) {
+    log('TMATCH string~=string test')
     return obj.indexOf(pattern) !== -1
 
   } else if (typeof obj !== 'object' || typeof pattern !== 'object') {
+    log('TMATCH obj is object, pattern is not object, false')
     return false
 
   } else if (Buffer.isBuffer(obj) && Buffer.isBuffer(pattern)) {
+    log('TMATCH buffer test')
     if (obj.equals) {
       return obj.equals(pattern)
     } else if (match.fastEqual) {
@@ -73,9 +83,11 @@ function match_ (obj, pattern, ca, cb) {
     }
 
   } else if (obj instanceof Date && pattern instanceof Date) {
+    log('TMATCH date test')
     return obj.getTime() === pattern.getTime()
 
   } else if (obj instanceof RegExp && pattern instanceof RegExp) {
+    log('TMATCH regexp~=regexp test')
     return obj.source === pattern.source &&
     obj.global === pattern.global &&
     obj.multiline === pattern.multiline &&
@@ -83,13 +95,16 @@ function match_ (obj, pattern, ca, cb) {
     obj.ignoreCase === pattern.ignoreCase
 
   } else if (isArguments(obj) || isArguments(pattern)) {
+    log('TMATCH arguments test')
     var slice = Array.prototype.slice
     return match_(slice.call(obj), slice.call(pattern), ca, cb)
 
   } else {
     // both are objects.  interesting case!
+    log('TMATCH object~=object test')
     var kobj = Object.keys(obj)
     var kpat = Object.keys(pattern)
+    log('  TMATCH patternkeys=%j objkeys=%j', kpat, kobj)
 
     // don't bother with stack acrobatics if there's nothing there
     if (kobj.length === 0 && kpat.length === 0) return true
@@ -97,19 +112,25 @@ function match_ (obj, pattern, ca, cb) {
     // if we've seen this exact pattern and object already, then
     // it means that pattern and obj have matching cyclicalness
     // however, non-cyclical patterns can match cyclical objects
+    log('  TMATCH check seen objects...')
     var cal = ca.length
     while (cal--) if (ca[cal] === obj && cb[cal] === pattern) return true
     ca.push(obj); cb.push(pattern)
+    log('  TMATCH not seen previously')
 
     var key
     for (var l = kpat.length - 1; l >= 0; l--) {
       key = kpat[l]
+      log('  TMATCH test obj[%j]', key, obj[key], pattern[key])
       if (!match_(obj[key], pattern[key], ca, cb)) return false
     }
 
     ca.pop(); cb.pop()
 
+    log('  TMATCH object pass')
     return true
   }
+
+  log('TMATCH no way to match')
   return false
 }
