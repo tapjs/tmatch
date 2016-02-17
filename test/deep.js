@@ -191,3 +191,78 @@ test('partial strings match on indexOf', function (t) {
   t.notOk(match(y, x))
   t.end()
 })
+
+test('ctors and other fun things', function (t) {
+  function Foo () {
+    this._isFoo = 'foo'
+  }
+
+  t.notOk(match(new Buffer('asdf'), new Buffer('asdff')))
+
+  var d = new Date().toISOString()
+
+  var obj = {
+    buffer: new Buffer('x'),
+    date: new Date(d),
+    fn: function () {},
+    foo: new Foo(),
+    num: 1.2,
+    nan: NaN,
+    bool: true,
+    array: [],
+    str: 'asdf',
+    inf: Infinity,
+    neginf: -Infinity
+  }
+
+  t.ok(match(obj, {
+    buffer: Buffer,
+    date: Date,
+    fn: Function,
+    foo: Foo,
+    num: Number,
+    nan: NaN,
+    bool: Boolean,
+    array: Array,
+    str: String
+  }))
+
+  t.ok(match(obj, {
+    buffer: new Buffer('x'),
+    date: d,
+    foo: new Foo(),
+    str: 'sd'
+  }))
+
+  var buf = new Buffer('x')
+  buf.equals = null
+  t.ok(match(obj, {
+    buffer: buf
+  }))
+
+  var buf2 = new Buffer('y')
+  buf2.equals = null
+  t.notOk(match(buf, buf2))
+
+  var buf3 = new Buffer('xy')
+  buf3.equals = null
+  t.notOk(match(buf, buf3))
+
+  var buf4 = new Buffer('xy')
+  buf4.equals = null
+  t.ok(match(buf4, buf3))
+
+  t.notOk(match(obj, {
+    inf: Number
+  }))
+
+  t.notOk(match(obj, {
+    neginf: Number
+  }))
+
+  t.notOk(match(obj, {
+    nan: Number
+  }))
+
+  t.end()
+})

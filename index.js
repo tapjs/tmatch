@@ -42,14 +42,15 @@ try {
    4. Ensure that all of the associated values match, recursively.
 */
 
+/* istanbul ignore next */
 var log = (/\btmatch\b/.test(process.env.NODE_DEBUG || '')) ?
   console.error : function () {}
 
 function match_ (obj, pattern, ca, cb) {
   log('TMATCH', typeof obj, pattern)
   /*eslint eqeqeq:0*/
-  if (typeof obj !== 'object' && typeof pattern !== 'object' && obj == pattern) {
-    log('TMATCH same object, true')
+  if (obj == pattern) {
+    log('TMATCH same object or simple value, true')
     return true
 
   } else if (obj === null || pattern === null) {
@@ -64,9 +65,62 @@ function match_ (obj, pattern, ca, cb) {
     log('TMATCH string~=string test')
     return obj.indexOf(pattern) !== -1
 
+  } else if (pattern === Buffer) {
+    log('TMATCH Buffer ctor')
+    return Buffer.isBuffer(obj)
+
+  } else if (obj instanceof Date && pattern instanceof Date) {
+    log('TMATCH date test')
+    return obj.getTime() === pattern.getTime()
+
+  } else if (obj instanceof Date && typeof pattern === 'string') {
+    log('TMATCH date~=string test')
+    return obj.getTime() === new Date(pattern).getTime()
+
+  } else if (isArguments(obj) || isArguments(pattern)) {
+    log('TMATCH arguments test')
+    var slice = Array.prototype.slice
+    return match_(slice.call(obj), slice.call(pattern), ca, cb)
+
+  } else if (pattern === Function) {
+    log('TMATCH Function ctor')
+    return typeof obj === 'function'
+
+  } else if (pattern === Number) {
+    log('TMATCH Number ctor (finite, not NaN)')
+    return typeof obj === 'number' && obj === obj && isFinite(obj)
+
+  } else if (pattern !== pattern) {
+    log('TMATCH NaN')
+    return obj !== obj
+
+  } else if (pattern === String) {
+    log('TMATCH String ctor')
+    return typeof obj === 'string'
+
+  } else if (pattern === Boolean) {
+    log('TMATCH Boolean ctor')
+    return typeof obj === 'boolean'
+
+  } else if (pattern === Array) {
+    log('TMATCH Array ctor', pattern, Array.isArray(obj))
+    return Array.isArray(obj)
+
+  } else if (typeof pattern === 'function' && typeof obj === 'object') {
+    log('TMATCH object~=function')
+    return obj instanceof pattern
+
   } else if (typeof obj !== 'object' || typeof pattern !== 'object') {
-    log('TMATCH obj is object, pattern is not object, false')
+    log('TMATCH obj is not object, pattern is not object, false')
     return false
+
+  } else if (obj instanceof RegExp && pattern instanceof RegExp) {
+    log('TMATCH regexp~=regexp test')
+    return obj.source === pattern.source &&
+    obj.global === pattern.global &&
+    obj.multiline === pattern.multiline &&
+    obj.lastIndex === pattern.lastIndex &&
+    obj.ignoreCase === pattern.ignoreCase
 
   } else if (Buffer.isBuffer(obj) && Buffer.isBuffer(pattern)) {
     log('TMATCH buffer test')
@@ -81,23 +135,6 @@ function match_ (obj, pattern, ca, cb) {
 
       return true
     }
-
-  } else if (obj instanceof Date && pattern instanceof Date) {
-    log('TMATCH date test')
-    return obj.getTime() === pattern.getTime()
-
-  } else if (obj instanceof RegExp && pattern instanceof RegExp) {
-    log('TMATCH regexp~=regexp test')
-    return obj.source === pattern.source &&
-    obj.global === pattern.global &&
-    obj.multiline === pattern.multiline &&
-    obj.lastIndex === pattern.lastIndex &&
-    obj.ignoreCase === pattern.ignoreCase
-
-  } else if (isArguments(obj) || isArguments(pattern)) {
-    log('TMATCH arguments test')
-    var slice = Array.prototype.slice
-    return match_(slice.call(obj), slice.call(pattern), ca, cb)
 
   } else {
     // both are objects.  interesting case!
