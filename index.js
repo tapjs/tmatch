@@ -42,14 +42,13 @@ var log = (/\btmatch\b/.test(process.env.NODE_DEBUG || '')) ?
 
 function match_ (obj, pattern, ca, cb) {
   log('TMATCH', typeof obj, pattern)
-  /*eslint eqeqeq:0*/
   if (obj == pattern) {
     log('TMATCH same object or simple value, true')
     return true
 
   } else if (obj === null || pattern === null) {
-    log('TMATCH null test')
-    return obj == pattern
+    log('TMATCH null test, already failed ==')
+    return false
 
   } else if (typeof obj === 'string' && pattern instanceof RegExp) {
     log('TMATCH string~=regexp test')
@@ -58,10 +57,6 @@ function match_ (obj, pattern, ca, cb) {
   } else if (typeof obj === 'string' && typeof pattern === 'string' && pattern) {
     log('TMATCH string~=string test')
     return obj.indexOf(pattern) !== -1
-
-  } else if (pattern === Buffer) {
-    log('TMATCH Buffer ctor')
-    return Buffer.isBuffer(obj)
 
   } else if (obj instanceof Date && pattern instanceof Date) {
     log('TMATCH date test')
@@ -75,6 +70,10 @@ function match_ (obj, pattern, ca, cb) {
     log('TMATCH arguments test')
     var slice = Array.prototype.slice
     return match_(slice.call(obj), slice.call(pattern), ca, cb)
+
+  } else if (pattern === Buffer) {
+    log('TMATCH Buffer ctor')
+    return Buffer.isBuffer(obj)
 
   } else if (pattern === Function) {
     log('TMATCH Function ctor')
@@ -111,10 +110,10 @@ function match_ (obj, pattern, ca, cb) {
   } else if (obj instanceof RegExp && pattern instanceof RegExp) {
     log('TMATCH regexp~=regexp test')
     return obj.source === pattern.source &&
-    obj.global === pattern.global &&
-    obj.multiline === pattern.multiline &&
-    obj.lastIndex === pattern.lastIndex &&
-    obj.ignoreCase === pattern.ignoreCase
+      obj.global === pattern.global &&
+      obj.multiline === pattern.multiline &&
+      obj.lastIndex === pattern.lastIndex &&
+      obj.ignoreCase === pattern.ignoreCase
 
   } else if (Buffer.isBuffer(obj) && Buffer.isBuffer(pattern)) {
     log('TMATCH buffer test')
@@ -154,7 +153,8 @@ function match_ (obj, pattern, ca, cb) {
       if (!match_(obj[key], pattern[key], ca, cb)) return false
     }
 
-    ca.pop(); cb.pop()
+    ca.pop()
+    cb.pop()
 
     log('  TMATCH object pass')
     return true
