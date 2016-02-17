@@ -17,8 +17,23 @@ var log = (/\btmatch\b/.test(process.env.NODE_DEBUG || '')) ?
 function match_ (obj, pattern, ca, cb) {
   log('TMATCH', typeof obj, pattern)
   if (obj == pattern) {
-    log('TMATCH same object or simple value, true')
-    return true
+    log('TMATCH same object or simple value, or problem')
+    // if one is object, and the other isn't, then this is bogus
+    if (obj === null || pattern === null) {
+      return true
+
+    } else if (typeof obj === 'object' && typeof pattern === 'object') {
+      return true
+
+    } else if (typeof obj === 'object' && typeof pattern !== 'object') {
+      return false
+
+    } else if (typeof obj !== 'object' && typeof pattern === 'object') {
+      return false
+
+    } else {
+      return true
+    }
 
   } else if (obj === null || pattern === null) {
     log('TMATCH null test, already failed ==')

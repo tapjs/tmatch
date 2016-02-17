@@ -266,3 +266,13 @@ test('ctors and other fun things', function (t) {
 
   t.end()
 })
+
+test('js WAT! array/string stuff', function (t) {
+  t.notOk(match([1], 1))
+  t.notOk(match(1, [1]))
+  t.ok(match([1], [1]))
+  var o = {}
+  t.ok(match(o, o))
+  t.ok(match(1, '1'))
+  t.end()
+})
