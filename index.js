@@ -10,32 +10,6 @@ function match (obj, pattern) {
   return match_(obj, pattern, [], [])
 }
 
-/**
-1. If the object is a string, and the pattern is a RegExp, then return
-   true if `pattern.test(object)`.
-2. Use loose equality (`==`) only for all other value types
-   (non-objects).  `tmatch` cares more about shape and contents than
-   type. This step will also catch functions, with the useful
-   (default) property that only references to the same function are
-   considered equal.  'Ware the halting problem!
-3. `null` *is* an object – a singleton value object, in fact – so if
-   either is `null`, return object == pattern.
-4. Since the only way to make it this far is for `object` or `pattern`
-   to be an object, if `object` or `pattern` is *not* an object,
-   they're clearly not a match.
-5. It's much faster to compare dates by numeric value (`.getTime()`)
-   than by lexical value.
-6. Compare RegExps by their components, not the objects themselves.
-7. The parts of an arguments list most people care about are the
-   arguments themselves, not the callee, which you shouldn't be
-   looking at anyway.
-8. Objects are more complex:
-   1. Return `true` if `object` and `pattern` both have no properties.
-   2. Ensure that cyclical references don't blow up the stack.
-   3. Ensure that all the key names in `pattern` exist in `object`.
-   4. Ensure that all of the associated values match, recursively.
-*/
-
 /* istanbul ignore next */
 var log = (/\btmatch\b/.test(process.env.NODE_DEBUG || '')) ?
   console.error : function () {}
