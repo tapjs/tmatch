@@ -37,31 +37,53 @@ http.get(someUrl).on('response', function (res) {
 
 ## details
 
-Copied from the source, here are the details of `only-shallow`'s algorithm:
+Copied from the source, here are the details of `tmatch`'s algorithm:
 
-1. If the object is a string, and the pattern is a RegExp, then return
+1. If the object loosely equals the pattern, then return true.  Note
+   that this covers object identity, some type coercion, and matching
+   `null` against `undefined`.
+2. If the object is a string, and the pattern is a RegExp, then return
    true if `pattern.test(object)`.
-2. Use loose equality (`==`) only for all other value types
-   (non-objects).  `tmatch` cares more about shape and contents than
-   type. This step will also catch functions, with the useful
-   (default) property that only references to the same function are
-   considered equal.  'Ware the halting problem!
-3. `null` *is* an object – a singleton value object, in fact – so if
-   either is `null`, return object == pattern.
-4. Since the only way to make it this far is for `object` or `pattern`
-   to be an object, if `object` or `pattern` is *not* an object,
-   they're clearly not a match.
-5. It's much faster to compare dates by numeric value (`.getTime()`)
-   than by lexical value.
-6. Compare RegExps by their components, not the objects themselves.
-7. The parts of an arguments list most people care about are the
-   arguments themselves, not the callee, which you shouldn't be
-   looking at anyway.
-8. Objects are more complex:
-   1. Return `true` if `object` and `pattern` both have no properties.
-   2. Ensure that cyclical references don't blow up the stack.
-   3. Ensure that all the key names in `pattern` exist in `object`.
-   4. Ensure that all of the associated values match, recursively.
+3. If the object is a string and the pattern is a non-empty string,
+   then return true if the string occurs within the object.
+5. If the object and the pattern are both Date objects, then return
+   true if they represent the same date.
+6. If the object is a Date object, and the pattern is a string, then
+   return true if the pattern is parseable as a date that is the same
+   date as the object.
+7. If the object is an `arguments` object, or the pattern is an
+   `arguments` object, then cast them to arrays and compare their
+   contents.
+8. If the pattern is the `Buffer` constructor, then return true if the
+   object is a Buffer.
+9. If the pattern is the `Function` constructor, then return true if
+   the object is a function.
+10. If the pattern is the String constructor, then return true if the
+    pattern is a string.
+11. If the pattern is the Boolean constructor, then return true if the
+    pattern is a boolean.
+12. If the pattern is the Array constructor, then return true if the
+    pattern is an array.
+13. If the pattern is any function, and then object is an object, then
+    return true if the object is an `instanceof` the pattern.
+14. At this point, if the object or the pattern are not objects, then
+    return false (because they would have matched earlier).
+15. If the object is a RegExp and the pattern is also a RegExp, return
+    true if their source, global, multiline, lastIndex, and ignoreCase
+    fields all match.
+16. If the object is a buffer, and the pattern is also a buffer, then
+    return true if they contain the same bytes.
+17. At this point, both object and pattern are object type values, so
+    compare their keys:
+    1. Get list of all iterable keys in pattern and object.  If both
+       are zero (two empty objects), return true.
+    2. Check to see if this pattern and this object have been tested
+       already (to handle cycles).  If so, return true, since the
+       check higher up in the stack will catch any mismatch.
+    3. For each key in the pattern, match it against the corresponding
+       key in object.  Missing keys in object will be resolved to
+       `undefined`, so it's possible to use `{foo:null}` as a pattern
+       to ensure that the object *doesn't* have a `foo` property.
 
 ## license
 
