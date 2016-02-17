@@ -10,12 +10,6 @@ function match (obj, pattern) {
   return match_(obj, pattern, [], [])
 }
 
-try {
-  match.fastEqual = require('buffertools').equals
-} catch (e) {
-  // whoops, nobody told buffertools it wasn't installed
-}
-
 /**
 1. If the object is a string, and the pattern is a RegExp, then return
    true if `pattern.test(object)`.
@@ -126,8 +120,6 @@ function match_ (obj, pattern, ca, cb) {
     log('TMATCH buffer test')
     if (obj.equals) {
       return obj.equals(pattern)
-    } else if (match.fastEqual) {
-      return match.fastEqual.call(obj, pattern)
     } else {
       if (obj.length !== pattern.length) return false
 
@@ -168,6 +160,6 @@ function match_ (obj, pattern, ca, cb) {
     return true
   }
 
-  log('TMATCH no way to match')
-  return false
+  /* istanbul ignore next */
+  throw new Error('impossible to reach this point')
 }
