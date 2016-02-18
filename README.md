@@ -39,9 +39,10 @@ http.get(someUrl).on('response', function (res) {
 
 Copied from the source, here are the details of `tmatch`'s algorithm:
 
-1. If the object loosely equals the pattern, then return true.  Note
-   that this covers object identity, some type coercion, and matching
-   `null` against `undefined`.
+1. If the object loosely equals the pattern, and either they're both
+   objects or neither objects, then return true.  Note that this
+   covers object identity, some type coercion, and matching `null`
+   against `undefined`, and avoids some stuff like `1 == [1]`.
 2. If the object is a string, and the pattern is a RegExp, then return
    true if `pattern.test(object)`.
 3. If the object is a string and the pattern is a non-empty string,
