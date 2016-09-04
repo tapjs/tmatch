@@ -87,6 +87,14 @@ test("different arrays don't match", function (t) {
   t.end()
 })
 
+test("arrays match when unordered", function (t) {
+  t.ok(match([1, 2, 3], [3, 2, 1], {unordered: true}))
+  t.ok(match([5, 6, 2, 1, 3, 4], [1, 2, 4], {unordered: true}))
+  t.ok(match([[5, 5], [1, 2]], [[2, 1]], {unordered: true}))
+  t.ok(match([{x: 0, y: 0}, {x: 5, y: 5}], [{x: 5, y: 5}], {unordered: true}))
+  t.end()
+})
+
 test('empty arrays match', function (t) {
   t.ok(match([], []))
   t.ok(match({ x: [] }, { x: [] }))
@@ -156,7 +164,7 @@ test("tmatch shouldn't care about key order (but still might) and types", functi
 
 test("match shouldn't blow up on circular data structures", function (t) {
   var x1 = { z: 4 }
-  var y1 = { x: x1 }
+  var y1 = { x: x1  }
   x1.y = y1
 
   var x2 = { z: 4 }
