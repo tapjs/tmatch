@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/isaacs/tmatch#readme",
   "devDependencies": {
-    "tap": "^5.5.0"
+    "tap": "^7.0.1"
   }
 }
