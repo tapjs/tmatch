@@ -39,7 +39,7 @@ function match_ (obj, pattern, ca, cb) {
     log('TMATCH null test, already failed ==')
     return false
 
-  } else if (typeof obj === 'string' && pattern instanceof RegExp) {
+  } else if (pattern instanceof RegExp && (typeof obj === 'string' || typeof obj === 'number')) {
     log('TMATCH string~=regexp test')
     return pattern.test(obj)
 
