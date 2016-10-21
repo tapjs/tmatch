@@ -1,5 +1,8 @@
 # tmatch
 
+[![Build Status](https://travis-ci.org/tapjs/tmatch.svg?branch=master)](https://travis-ci.org/tapjs/tmatch)
+
+
 This module exists to facilitate the `t.match()` method in
 [`tap`](http://npm.im/tap).
 
