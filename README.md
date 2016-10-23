@@ -73,7 +73,8 @@ Copied from the source, here are the details of `tmatch`'s algorithm:
     fields all match.
 15. If the object is a buffer, and the pattern is also a buffer, then
     return true if they contain the same bytes.
-16. At this point, both object and pattern are object type values, so
+16. If the pattern is a RegExp, then return true if `pattern.test(object)`.
+17. At this point, both object and pattern are object type values, so
     compare their keys:
     1. Get list of all iterable keys in pattern and object.  If both
        are zero (two empty objects), return true.

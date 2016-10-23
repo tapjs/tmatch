@@ -115,6 +115,9 @@ function match_ (obj, pattern, ca, cb) {
 
       return true
     }
+  } else if (pattern instanceof RegExp) {
+    log('TMATCH any~=regexp test')
+    return pattern.test(String(obj))
 
   } else {
     // both are objects.  interesting case!

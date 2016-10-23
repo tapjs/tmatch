@@ -276,3 +276,20 @@ test('js WAT! array/string stuff', function (t) {
   t.ok(match(1, '1'))
   t.end()
 })
+
+test('regexps match objects according to their string representation', function (t) {
+  t.ok(match(['asdf'], /asdf/))
+  t.notOk(match(['asdf'], /hjkl/))
+
+  var err = new Error('foobar')
+
+  t.ok(match(err, /foobar/))
+  t.notOk(match(err, /asdfghjkl/))
+
+  var obj = { foobar: 'foobar' }
+
+  t.ok(match(obj, /object Object/))
+  t.notOk(match(obj, /asdfghjkl/))
+
+  t.end()
+})
