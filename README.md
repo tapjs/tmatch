@@ -46,34 +46,34 @@ Copied from the source, here are the details of `tmatch`'s algorithm:
    true if `pattern.test(object)`.
 3. If the object is a string and the pattern is a non-empty string,
    then return true if the string occurs within the object.
-5. If the object and the pattern are both Date objects, then return
+4. If the object and the pattern are both Date objects, then return
    true if they represent the same date.
-6. If the object is a Date object, and the pattern is a string, then
+5. If the object is a Date object, and the pattern is a string, then
    return true if the pattern is parseable as a date that is the same
    date as the object.
-7. If the object is an `arguments` object, or the pattern is an
+6. If the object is an `arguments` object, or the pattern is an
    `arguments` object, then cast them to arrays and compare their
    contents.
-8. If the pattern is the `Buffer` constructor, then return true if the
+7. If the pattern is the `Buffer` constructor, then return true if the
    object is a Buffer.
-9. If the pattern is the `Function` constructor, then return true if
+8. If the pattern is the `Function` constructor, then return true if
    the object is a function.
-10. If the pattern is the String constructor, then return true if the
-    pattern is a string.
-11. If the pattern is the Boolean constructor, then return true if the
+9. If the pattern is the String constructor, then return true if the
+   pattern is a string.
+10. If the pattern is the Boolean constructor, then return true if the
     pattern is a boolean.
-12. If the pattern is the Array constructor, then return true if the
+11. If the pattern is the Array constructor, then return true if the
     pattern is an array.
-13. If the pattern is any function, and then object is an object, then
+12. If the pattern is any function, and then object is an object, then
     return true if the object is an `instanceof` the pattern.
-14. At this point, if the object or the pattern are not objects, then
+13. At this point, if the object or the pattern are not objects, then
     return false (because they would have matched earlier).
-15. If the object is a RegExp and the pattern is also a RegExp, return
+14. If the object is a RegExp and the pattern is also a RegExp, return
     true if their source, global, multiline, lastIndex, and ignoreCase
     fields all match.
-16. If the object is a buffer, and the pattern is also a buffer, then
+15. If the object is a buffer, and the pattern is also a buffer, then
     return true if they contain the same bytes.
-17. At this point, both object and pattern are object type values, so
+16. At this point, both object and pattern are object type values, so
     compare their keys:
     1. Get list of all iterable keys in pattern and object.  If both
        are zero (two empty objects), return true.
