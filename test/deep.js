@@ -48,6 +48,11 @@ test('should handle RegExps', function (t) {
   t.notOk(match(/[a]/i, /[a]/g))
   t.ok(match(/[a]/, /[a]/))
   t.ok(match(/ab?[a-z]{,6}/g, /ab?[a-z]{,6}/g))
+  t.notOk(match([1, 2, 3], /asdf/))
+  t.ok(match([1, 2, 3], /,2,/))
+  t.ok(match({ x: 123 }, { x: /^\w+/ }))
+  t.ok(match({ toString: function () { return 'FooBar' }}, /^FooBar$/))
+  t.notOk(match({ toString: function () { return 'x' }}, /^FooBar$/))
   t.end()
 })
 

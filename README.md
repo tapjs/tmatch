@@ -43,9 +43,13 @@ Copied from the source, here are the details of `tmatch`'s algorithm:
    objects or neither objects, then return true.  Note that this
    covers object identity, some type coercion, and matching `null`
    against `undefined`, and avoids some stuff like `1 == [1]`.
-2. If the object is a string, and the pattern is a RegExp, then return
-   true if `pattern.test(object)`.
-3. If the object is a string and the pattern is a non-empty string,
+2. If the object is a RegExp and the pattern is also a RegExp, return
+   true if their source, global, multiline, lastIndex, and ignoreCase
+   fields all match.
+3. If the pattern is a RegExp, then return true if
+   `pattern.test(object)`, casting the object to a string if it is not
+   already a string.
+4. If the object is a string and the pattern is a non-empty string,
    then return true if the string occurs within the object.
 5. If the object and the pattern are both Date objects, then return
    true if they represent the same date.
@@ -69,12 +73,9 @@ Copied from the source, here are the details of `tmatch`'s algorithm:
     return true if the object is an `instanceof` the pattern.
 14. At this point, if the object or the pattern are not objects, then
     return false (because they would have matched earlier).
-15. If the object is a RegExp and the pattern is also a RegExp, return
-    true if their source, global, multiline, lastIndex, and ignoreCase
-    fields all match.
-16. If the object is a buffer, and the pattern is also a buffer, then
+15. If the object is a buffer, and the pattern is also a buffer, then
     return true if they contain the same bytes.
-17. At this point, both object and pattern are object type values, so
+16. At this point, both object and pattern are object type values, so
     compare their keys:
     1. Get list of all iterable keys in pattern and object.  If both
        are zero (two empty objects), return true.

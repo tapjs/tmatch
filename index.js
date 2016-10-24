@@ -39,10 +39,21 @@ function match_ (obj, pattern, ca, cb) {
     log('TMATCH null test, already failed ==')
     return false
 
-  } else if (typeof obj === 'string' && pattern instanceof RegExp) {
-    log('TMATCH string~=regexp test')
-    return pattern.test(obj)
-
+  } else if (pattern instanceof RegExp) {
+    if (typeof obj === 'string') {
+      log('TMATCH string~=regexp test')
+      return pattern.test(obj)
+    } else if (obj instanceof RegExp) {
+      log('TMATCH regexp~=regexp test')
+      return obj.source === pattern.source &&
+        obj.global === pattern.global &&
+        obj.multiline === pattern.multiline &&
+        obj.lastIndex === pattern.lastIndex &&
+        obj.ignoreCase === pattern.ignoreCase
+    } else {
+      log('TMATCH stringify~=regexp test')
+      return pattern.test('' + obj)
+    }
   } else if (typeof obj === 'string' && typeof pattern === 'string' && pattern) {
     log('TMATCH string~=string test')
     return obj.indexOf(pattern) !== -1
@@ -95,14 +106,6 @@ function match_ (obj, pattern, ca, cb) {
   } else if (typeof obj !== 'object' || typeof pattern !== 'object') {
     log('TMATCH obj is not object, pattern is not object, false')
     return false
-
-  } else if (obj instanceof RegExp && pattern instanceof RegExp) {
-    log('TMATCH regexp~=regexp test')
-    return obj.source === pattern.source &&
-      obj.global === pattern.global &&
-      obj.multiline === pattern.multiline &&
-      obj.lastIndex === pattern.lastIndex &&
-      obj.ignoreCase === pattern.ignoreCase
 
   } else if (Buffer.isBuffer(obj) && Buffer.isBuffer(pattern)) {
     log('TMATCH buffer test')
