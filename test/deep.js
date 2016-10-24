@@ -183,6 +183,13 @@ test('regexps match strings', function (t) {
   t.end()
 })
 
+test('regexps match numbers', function (t) {
+  var x = { one: 1 }
+  var y = { one: /\d/ }
+  t.ok(match(x,y))
+  t.end()
+})
+
 test('partial strings match on indexOf', function (t) {
   var x = { one: 'String' }
   var y = { one: 'rin' }
