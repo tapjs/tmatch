@@ -202,6 +202,16 @@ test('ctors and other fun things', function (t) {
     this._isFoo = 'foo'
   }
 
+  if (!Buffer.prototype.equals) {
+    Buffer.prototype.equals = function (pattern) {
+      var obj = this
+      if (obj.length !== pattern.length) return false
+      for (var j = 0; j < obj.length; j++) if (obj[j] != pattern[j]) return false
+
+      return true
+    }
+  }
+
   t.notOk(match(new Buffer('asdf'), new Buffer('asdff')))
 
   var d = new Date().toISOString()
