@@ -4,17 +4,21 @@ function isArguments (obj) {
   return Object.prototype.toString.call(obj) === '[object Arguments]'
 }
 
+function isArray(obj) {
+  return Object.prototype.toString.call(obj) === '[object Array]'
+}
+
 module.exports = match
 
-function match (obj, pattern) {
-  return match_(obj, pattern, [], [])
+function match (obj, pattern, opts) {
+  return match_(obj, pattern, [], [], opts || {})
 }
 
 /* istanbul ignore next */
 var log = (/\btmatch\b/.test(process.env.NODE_DEBUG || '')) ?
   console.error : function () {}
 
-function match_ (obj, pattern, ca, cb) {
+function match_ (obj, pattern, ca, cb, opts) {
   log('TMATCH', typeof obj, pattern)
   if (obj == pattern) {
     log('TMATCH same object or simple value, or problem')
@@ -69,7 +73,7 @@ function match_ (obj, pattern, ca, cb) {
   } else if (isArguments(obj) || isArguments(pattern)) {
     log('TMATCH arguments test')
     var slice = Array.prototype.slice
-    return match_(slice.call(obj), slice.call(pattern), ca, cb)
+    return match_(slice.call(obj), slice.call(pattern), ca, cb, opts)
 
   } else if (pattern === Buffer) {
     log('TMATCH Buffer ctor')
@@ -141,8 +145,15 @@ function match_ (obj, pattern, ca, cb) {
     var key
     for (var l = kpat.length - 1; l >= 0; l--) {
       key = kpat[l]
-      log('  TMATCH test obj[%j]', key, obj[key], pattern[key])
-      if (!match_(obj[key], pattern[key], ca, cb)) return false
+      if (opts.unordered && isArray(obj)) {
+        log('  TMATCH test unordered array')
+        if (!obj.find(function(v) {
+          return match_(v, pattern[key], ca, cb, opts)
+        })) return false
+      } else {
+        log('  TMATCH test obj[%j]', key, obj[key], pattern[key])
+        if (!match_(obj[key], pattern[key], ca, cb, opts)) return false
+      }
     }
 
     ca.pop()
