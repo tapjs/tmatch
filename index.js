@@ -1,157 +1,119 @@
 'use strict'
 
+module.exports = match
+
 function isArguments (obj) {
   return Object.prototype.toString.call(obj) === '[object Arguments]'
 }
 
-module.exports = match
+function regexpSame (a, b) {
+  return a.source === b.source &&
+    a.global === b.global &&
+    a.multiline === b.multiline &&
+    a.lastIndex === b.lastIndex &&
+    a.ignoreCase === b.ignoreCase
+}
+
+function arrayFrom (obj) {
+  return Array.isArray(obj) ? obj
+    : Array.from ? Array.from(obj)
+    : Array.prototype.slice.call(obj)
+}
+
+function bufferSame (a, b) {
+  var ret
+  if (a.equals) {
+    ret = a.equals(b)
+  } else if (a.length !== b.length) {
+    ret = false
+  } else {
+    ret = true
+    for (var j = 0; j < a.length && ret; j++) {
+      if (a[j] != b[j])
+        ret = false
+    }
+  }
+  return ret
+}
 
 function match (obj, pattern) {
   return match_(obj, pattern, [], [])
 }
 
-/* istanbul ignore next */
-var log = (/\btmatch\b/.test(process.env.NODE_DEBUG || '')) ?
-  console.error : function () {}
-
 function match_ (obj, pattern, ca, cb) {
-  log('TMATCH', typeof obj, pattern)
-  if (obj == pattern) {
-    log('TMATCH same object or simple value, or problem')
-    // if one is object, and the other isn't, then this is bogus
-    if (obj === null || pattern === null) {
-      return true
+  return obj == pattern ? (
+    obj === null || pattern === null ? true
+    : typeof obj === 'object' && typeof pattern === 'object' ? true
+    : typeof obj === 'object' && typeof pattern !== 'object' ? false
+    : typeof obj !== 'object' && typeof pattern === 'object' ? false
+    : true
+  )
+  : obj === null || pattern === null ? false
+  : pattern instanceof RegExp ? (
+    typeof obj === 'string' ? pattern.test(obj)
+    : obj instanceof RegExp ? regexpSame(obj, pattern)
+    : pattern.test('' + obj)
+  )
+  : typeof obj === 'string' && typeof pattern === 'string' && pattern ?
+    obj.indexOf(pattern) !== -1
+  : obj instanceof Date && pattern instanceof Date ?
+    obj.getTime() === pattern.getTime()
+  : obj instanceof Date && typeof pattern === 'string' ?
+    obj.getTime() === new Date(pattern).getTime()
+  : isArguments(obj) || isArguments(pattern) ?
+    match_(arrayFrom(obj), arrayFrom(pattern), ca, cb)
+  : pattern === Buffer ? Buffer.isBuffer(obj)
+  : pattern === Function ? typeof obj === 'function'
+  : pattern === Number ?
+    typeof obj === 'number' && obj === obj && isFinite(obj)
+  : pattern !== pattern ? obj !== obj
+  : pattern === String ? typeof obj === 'string'
+  : pattern === Boolean ? typeof obj === 'boolean'
+  : pattern === Array ? Array.isArray(obj)
+  : typeof pattern === 'function' && typeof obj === 'object' ?
+    obj instanceof pattern
+  : typeof obj !== 'object' || typeof pattern !== 'object' ? false
+  : Buffer.isBuffer(obj) && Buffer.isBuffer(pattern) ?
+    bufferSame(obj, pattern)
+  : matchObj(obj, pattern, Object.keys(obj), Object.keys(pattern), ca, cb)
+}
 
-    } else if (typeof obj === 'object' && typeof pattern === 'object') {
-      return true
+function matchObj (obj, pattern, kobj, kpat, ca, cb) {
+  var ret = true
 
-    } else if (typeof obj === 'object' && typeof pattern !== 'object') {
-      return false
-
-    } else if (typeof obj !== 'object' && typeof pattern === 'object') {
-      return false
-
-    } else {
-      return true
-    }
-
-  } else if (obj === null || pattern === null) {
-    log('TMATCH null test, already failed ==')
-    return false
-
-  } else if (pattern instanceof RegExp) {
-    if (typeof obj === 'string') {
-      log('TMATCH string~=regexp test')
-      return pattern.test(obj)
-    } else if (obj instanceof RegExp) {
-      log('TMATCH regexp~=regexp test')
-      return obj.source === pattern.source &&
-        obj.global === pattern.global &&
-        obj.multiline === pattern.multiline &&
-        obj.lastIndex === pattern.lastIndex &&
-        obj.ignoreCase === pattern.ignoreCase
-    } else {
-      log('TMATCH stringify~=regexp test')
-      return pattern.test('' + obj)
-    }
-  } else if (typeof obj === 'string' && typeof pattern === 'string' && pattern) {
-    log('TMATCH string~=string test')
-    return obj.indexOf(pattern) !== -1
-
-  } else if (obj instanceof Date && pattern instanceof Date) {
-    log('TMATCH date test')
-    return obj.getTime() === pattern.getTime()
-
-  } else if (obj instanceof Date && typeof pattern === 'string') {
-    log('TMATCH date~=string test')
-    return obj.getTime() === new Date(pattern).getTime()
-
-  } else if (isArguments(obj) || isArguments(pattern)) {
-    log('TMATCH arguments test')
-    var slice = Array.prototype.slice
-    return match_(slice.call(obj), slice.call(pattern), ca, cb)
-
-  } else if (pattern === Buffer) {
-    log('TMATCH Buffer ctor')
-    return Buffer.isBuffer(obj)
-
-  } else if (pattern === Function) {
-    log('TMATCH Function ctor')
-    return typeof obj === 'function'
-
-  } else if (pattern === Number) {
-    log('TMATCH Number ctor (finite, not NaN)')
-    return typeof obj === 'number' && obj === obj && isFinite(obj)
-
-  } else if (pattern !== pattern) {
-    log('TMATCH NaN')
-    return obj !== obj
-
-  } else if (pattern === String) {
-    log('TMATCH String ctor')
-    return typeof obj === 'string'
-
-  } else if (pattern === Boolean) {
-    log('TMATCH Boolean ctor')
-    return typeof obj === 'boolean'
-
-  } else if (pattern === Array) {
-    log('TMATCH Array ctor', pattern, Array.isArray(obj))
-    return Array.isArray(obj)
-
-  } else if (typeof pattern === 'function' && typeof obj === 'object') {
-    log('TMATCH object~=function')
-    return obj instanceof pattern
-
-  } else if (typeof obj !== 'object' || typeof pattern !== 'object') {
-    log('TMATCH obj is not object, pattern is not object, false')
-    return false
-
-  } else if (Buffer.isBuffer(obj) && Buffer.isBuffer(pattern)) {
-    log('TMATCH buffer test')
-    if (obj.equals) {
-      return obj.equals(pattern)
-    } else {
-      if (obj.length !== pattern.length) return false
-
-      for (var j = 0; j < obj.length; j++) if (obj[j] != pattern[j]) return false
-
-      return true
-    }
-
-  } else {
-    // both are objects.  interesting case!
-    log('TMATCH object~=object test')
-    var kobj = Object.keys(obj)
-    var kpat = Object.keys(pattern)
-    log('  TMATCH patternkeys=%j objkeys=%j', kpat, kobj)
-
-    // don't bother with stack acrobatics if there's nothing there
-    if (kobj.length === 0 && kpat.length === 0) return true
-
+  // don't bother with stack acrobatics if there's nothing there
+  if (kobj.length === 0 && kpat.length === 0)
+    ret = true
+  else {
     // if we've seen this exact pattern and object already, then
     // it means that pattern and obj have matching cyclicalness
     // however, non-cyclical patterns can match cyclical objects
-    log('  TMATCH check seen objects...')
     var cal = ca.length
-    while (cal--) if (ca[cal] === obj && cb[cal] === pattern) return true
-    ca.push(obj); cb.push(pattern)
-    log('  TMATCH not seen previously')
-
-    var key
-    for (var l = kpat.length - 1; l >= 0; l--) {
-      key = kpat[l]
-      log('  TMATCH test obj[%j]', key, obj[key], pattern[key])
-      if (!match_(obj[key], pattern[key], ca, cb)) return false
+    var go = true
+    while (cal-- && go) {
+      if (ca[cal] === obj && cb[cal] === pattern) {
+        ret = true
+        go = false
+      }
     }
 
-    ca.pop()
-    cb.pop()
+    if (go) {
+      ca.push(obj)
+      cb.push(pattern)
 
-    log('  TMATCH object pass')
-    return true
+      var key
+      for (var l = kpat.length - 1; l >= 0 && ret; l--) {
+        key = kpat[l]
+        if (!match_(obj[key], pattern[key], ca, cb))
+          ret = false
+      }
+
+      if (ret) {
+        ca.pop()
+        cb.pop()
+      }
+    }
   }
 
-  /* istanbul ignore next */
-  throw new Error('impossible to reach this point')
+  return ret
 }
