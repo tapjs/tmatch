@@ -20,6 +20,16 @@ function arrayFrom (obj) {
     : Array.prototype.slice.call(obj)
 }
 
+var hasSet = typeof Set === 'function'
+
+function isSet (object) {
+  return hasSet && (object instanceof Set)
+}
+
+function isMap (object) {
+  return hasSet && (object instanceof Map)
+}
+
 function bufferSame (a, b) {
   var ret
   if (a.equals) {
@@ -40,6 +50,39 @@ function match (obj, pattern) {
   return match_(obj, pattern, [], [])
 }
 
+function setMatch (obj, pattern) {
+  var ret = true
+  if (!isSet(obj))
+    ret = false
+  else if (pattern.size === 0)
+    ret = true
+  else {
+    pattern.forEach(function (entry) {
+      if (ret)
+        ret = obj.has(entry)
+    })
+  }
+  return ret
+}
+
+function mapMatch (obj, pattern, ca, cb) {
+  var ret = true
+  if (!isMap(obj))
+    ret = false
+  else if (pattern.size === 0)
+    ret = true
+  else {
+    pattern.forEach(function (value, key) {
+      if (ret)
+        ret = obj.has(key)
+      if (ret)
+        ret = match_(value, obj.get(key), ca, cb)
+    })
+  }
+  return ret
+}
+
+
 function match_ (obj, pattern, ca, cb) {
   return obj == pattern ? (
     obj === null || pattern === null ? true
@@ -54,6 +97,8 @@ function match_ (obj, pattern, ca, cb) {
     : obj instanceof RegExp ? regexpSame(obj, pattern)
     : pattern.test('' + obj)
   )
+  : isSet(pattern) ? setMatch(obj, pattern)
+  : isMap(pattern) ? mapMatch(obj, pattern, ca, cb)
   : typeof obj === 'string' && typeof pattern === 'string' && pattern ?
     obj.indexOf(pattern) !== -1
   : obj instanceof Date && pattern instanceof Date ?
