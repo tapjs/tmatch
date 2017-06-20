@@ -49,33 +49,37 @@ Copied from the source, here are the details of `tmatch`'s algorithm:
 3. If the pattern is a RegExp, then return true if
    `pattern.test(object)`, casting the object to a string if it is not
    already a string.
-4. If the object is a string and the pattern is a non-empty string,
+4. If the pattern is a `Set`, then return true if all the keys in
+   `pattern` appear in `object`.
+5. If the pattern is a `Map`, then return true if all the keys in
+   `pattern` are in `object`, and the values match as well.
+6. If the object is a string and the pattern is a non-empty string,
    then return true if the string occurs within the object.
-5. If the object and the pattern are both Date objects, then return
+7. If the object and the pattern are both Date objects, then return
    true if they represent the same date.
-6. If the object is a Date object, and the pattern is a string, then
+8. If the object is a Date object, and the pattern is a string, then
    return true if the pattern is parseable as a date that is the same
    date as the object.
-7. If the object is an `arguments` object, or the pattern is an
+9. If the object is an `arguments` object, or the pattern is an
    `arguments` object, then cast them to arrays and compare their
    contents.
-8. If the pattern is the `Buffer` constructor, then return true if the
-   object is a Buffer.
-9. If the pattern is the `Function` constructor, then return true if
-   the object is a function.
-10. If the pattern is the String constructor, then return true if the
+10. If the pattern is the `Buffer` constructor, then return true if
+    the object is a Buffer.
+11. If the pattern is the `Function` constructor, then return true if
+    the object is a function.
+12. If the pattern is the String constructor, then return true if the
     pattern is a string.
-11. If the pattern is the Boolean constructor, then return true if the
+13. If the pattern is the Boolean constructor, then return true if the
     pattern is a boolean.
-12. If the pattern is the Array constructor, then return true if the
+14. If the pattern is the Array constructor, then return true if the
     pattern is an array.
-13. If the pattern is any function, and then object is an object, then
+15. If the pattern is any function, and then object is an object, then
     return true if the object is an `instanceof` the pattern.
-14. At this point, if the object or the pattern are not objects, then
+16. At this point, if the object or the pattern are not objects, then
     return false (because they would have matched earlier).
-15. If the object is a buffer, and the pattern is also a buffer, then
+17. If the object is a buffer, and the pattern is also a buffer, then
     return true if they contain the same bytes.
-16. At this point, both object and pattern are object type values, so
+18. At this point, both object and pattern are object type values, so
     compare their keys:
     1. Get list of all iterable keys in pattern and object.  If both
        are zero (two empty objects), return true.
