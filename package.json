@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/isaacs/tmatch#readme",
   "devDependencies": {
-    "tap": "^10.4.0"
+    "tap": "^11.1.5"
   },
   "files": [
     "index.js"
