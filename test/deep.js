@@ -212,12 +212,12 @@ test('ctors and other fun things', function (t) {
     }
   }
 
-  t.notOk(match(new Buffer('asdf'), new Buffer('asdff')))
+  t.notOk(match(Buffer.from('asdf'), Buffer.from('asdff')))
 
   var d = new Date().toISOString()
 
   var obj = {
-    buffer: new Buffer('x'),
+    buffer: Buffer.from('x'),
     date: new Date(d),
     fn: function () {},
     foo: new Foo(),
@@ -243,27 +243,27 @@ test('ctors and other fun things', function (t) {
   }))
 
   t.ok(match(obj, {
-    buffer: new Buffer('x'),
+    buffer: Buffer.from('x'),
     date: d,
     foo: new Foo(),
     str: 'sd'
   }))
 
-  var buf = new Buffer('x')
+  var buf = Buffer.from('x')
   buf.equals = null
   t.ok(match(obj, {
     buffer: buf
   }))
 
-  var buf2 = new Buffer('y')
+  var buf2 = Buffer.from('y')
   buf2.equals = null
   t.notOk(match(buf, buf2))
 
-  var buf3 = new Buffer('xy')
+  var buf3 = Buffer.from('xy')
   buf3.equals = null
   t.notOk(match(buf, buf3))
 
-  var buf4 = new Buffer('xy')
+  var buf4 = Buffer.from('xy')
   buf4.equals = null
   t.ok(match(buf4, buf3))
 
