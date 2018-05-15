@@ -21,5 +21,8 @@
   "homepage": "https://github.com/isaacs/tmatch#readme",
   "devDependencies": {
     "tap": "^10.4.0"
-  }
+  },
+  "files": [
+    "index.js"
+  ]
 }
