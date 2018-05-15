@@ -11,12 +11,14 @@ t.test('set', function (t) {
 
   t.ok(tmatch(a, pattern))
   t.ok(tmatch(b, pattern))
-  t.notOk(tmatch(c, pattern))
+  t.ok(tmatch(c, pattern))
   t.notOk(tmatch({not: 'a set'}, pattern))
 
   t.ok(tmatch(a, b))
-  t.notOk(tmatch(a, c))
-  t.notOk(tmatch(b, c))
+  t.ok(tmatch(a, c))
+  t.ok(tmatch(b, c))
+  t.notOk(tmatch(new Set([obj]), new Set([obj, {a: 1}])))
+  t.notOk(tmatch(new Set([{ b: 1 }]), new Set([obj, { b: 1 }])))
   t.ok(tmatch(new Set(), new Set()))
   t.notOk(tmatch(a, Array.from(a)))
   t.end()
