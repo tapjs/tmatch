@@ -4,7 +4,7 @@
   "description": "This module exists to facilitate the `t.match()` method in [`tap`](http://npm.im/tap).",
   "main": "index.js",
   "scripts": {
-    "test": "tap --100 test/*.js -J",
+    "test": "tap --100 test -J --bail",
     "preversion": "npm test",
     "postversion": "npm publish",
     "postpublish": "git push origin --all; git push origin --tags"

@@ -1,6 +1,7 @@
 'use strict'
 
 module.exports = match
+match.strict = strict
 
 function isArguments (obj) {
   return Object.prototype.toString.call(obj) === '[object Arguments]'
@@ -47,10 +48,14 @@ function bufferSame (a, b) {
 }
 
 function match (obj, pattern) {
-  return match_(obj, pattern, [], [])
+  return match_(obj, pattern, [], [], looseEqual)
 }
 
-function setMatch (obj, pattern, ca, cb) {
+function strict(obj, pattern) {
+  return match_(obj, pattern, [], [], strictEqual)
+}
+
+function setMatch (obj, pattern, ca, cb, fn) {
   var ret = true
   if (!isSet(obj))
     ret = false
@@ -74,7 +79,7 @@ function setMatch (obj, pattern, ca, cb) {
         if (done || seen.has(objentry))
           return
 
-        if (match_(objentry, entry, ca, cb)) {
+        if (match_(objentry, entry, ca, cb, fn)) {
           seen.add(objentry)
           ret = true
           done = true
@@ -90,7 +95,7 @@ function setMatch (obj, pattern, ca, cb) {
   return ret
 }
 
-function mapMatch (obj, pattern, ca, cb) {
+function mapMatch (obj, pattern, ca, cb, fn) {
   var ret = true
   if (!isMap(obj))
     ret = false
@@ -101,15 +106,23 @@ function mapMatch (obj, pattern, ca, cb) {
       if (ret)
         ret = obj.has(key)
       if (ret)
-        ret = match_(value, obj.get(key), ca, cb)
+        ret = match_(value, obj.get(key), ca, cb, fn)
     })
   }
   return ret
 }
 
 
-function match_ (obj, pattern, ca, cb) {
-  return obj == pattern ? (
+function strictEqual(obj, pattern) {
+  return obj === pattern
+}
+
+function looseEqual(obj, pattern) {
+  return obj == pattern
+}
+
+function match_ (obj, pattern, ca, cb, fn) {
+  return fn(obj, pattern) ? (
     obj === null || pattern === null ? true
     : typeof obj === 'object' && typeof pattern === 'object' ? true
     : typeof obj === 'object' && typeof pattern !== 'object' ? false
@@ -122,8 +135,8 @@ function match_ (obj, pattern, ca, cb) {
     : obj instanceof RegExp ? regexpSame(obj, pattern)
     : pattern.test('' + obj)
   )
-  : isSet(pattern) ? setMatch(obj, pattern, ca, cb)
-  : isMap(pattern) ? mapMatch(obj, pattern, ca, cb)
+  : isSet(pattern) ? setMatch(obj, pattern, ca, cb, fn)
+  : isMap(pattern) ? mapMatch(obj, pattern, ca, cb, fn)
   : typeof obj === 'string' && typeof pattern === 'string' && pattern ?
     obj.indexOf(pattern) !== -1
   : obj instanceof Date && pattern instanceof Date ?
@@ -131,7 +144,7 @@ function match_ (obj, pattern, ca, cb) {
   : obj instanceof Date && typeof pattern === 'string' ?
     obj.getTime() === new Date(pattern).getTime()
   : isArguments(obj) || isArguments(pattern) ?
-    match_(arrayFrom(obj), arrayFrom(pattern), ca, cb)
+    match_(arrayFrom(obj), arrayFrom(pattern), ca, cb, fn)
   : pattern === Buffer ? Buffer.isBuffer(obj)
   : pattern === Function ? typeof obj === 'function'
   : pattern === Number ?
@@ -145,10 +158,10 @@ function match_ (obj, pattern, ca, cb) {
   : typeof obj !== 'object' || typeof pattern !== 'object' ? false
   : Buffer.isBuffer(obj) && Buffer.isBuffer(pattern) ?
     bufferSame(obj, pattern)
-  : matchObj(obj, pattern, Object.keys(obj), Object.keys(pattern), ca, cb)
+  : matchObj(obj, pattern, Object.keys(obj), Object.keys(pattern), ca, cb, fn)
 }
 
-function matchObj (obj, pattern, kobj, kpat, ca, cb) {
+function matchObj (obj, pattern, kobj, kpat, ca, cb, fn) {
   var ret = true
 
   // don't bother with stack acrobatics if there's nothing there
@@ -174,7 +187,7 @@ function matchObj (obj, pattern, kobj, kpat, ca, cb) {
       var key
       for (var l = kpat.length - 1; l >= 0 && ret; l--) {
         key = kpat[l]
-        if (!match_(obj[key], pattern[key], ca, cb))
+        if (!match_(obj[key], pattern[key], ca, cb, fn))
           ret = false
       }
 

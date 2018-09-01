@@ -1,6 +1,6 @@
 var tap = require('tap')
 var test = tap.test
-var match = require('../')
+var match = require('../..')
 
 test("shouldn't care about key order and types", function (t) {
   t.ok(match({ a: 1, b: 2 }, { b: 2, a: '1' }))

@@ -1,5 +1,5 @@
 'use strict'
-var tmatch = require('../')
+var tmatch = require('../..')
 var t = require('tap')
 
 t.test('set', function (t) {
