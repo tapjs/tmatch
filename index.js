@@ -121,8 +121,6 @@ function match_ (obj, pattern, ca, cb) {
     : obj instanceof RegExp ? regexpSame(obj, pattern)
     : pattern.test('' + obj)
   )
-  : isSet(pattern) ? setMatch(obj, pattern, ca, cb)
-  : isMap(pattern) ? mapMatch(obj, pattern, ca, cb)
   : typeof obj === 'string' && typeof pattern === 'string' && pattern ?
     obj.indexOf(pattern) !== -1
   : obj instanceof Date && pattern instanceof Date ?
@@ -145,6 +143,8 @@ function match_ (obj, pattern, ca, cb) {
   : typeof obj !== 'object' || typeof pattern !== 'object' ? false
   : Buffer.isBuffer(obj) && Buffer.isBuffer(pattern) ?
     bufferSame(obj, pattern)
+  : isSet(pattern) ? setMatch(obj, pattern, ca, cb)
+  : isMap(pattern) ? mapMatch(obj, pattern, ca, cb)
   : matchObj(obj, pattern, Object.keys(obj), Object.keys(pattern), ca, cb)
 }
 
