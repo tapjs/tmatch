@@ -291,3 +291,15 @@ test('js WAT! array/string stuff', function (t) {
   t.ok(match(1, '1'))
   t.end()
 })
+
+test('symbology', t => {
+  t.ok(match({ a: Symbol('a') }, { a: Symbol }))
+  t.ok(match({ a: Symbol('a') }, { a: Symbol('a') }))
+  t.ok(match({ a: Symbol('a') }, { a: Symbol.for('a') }))
+
+  t.notOk(match({a: Symbol('a') }, { a: 'Symbol(a)' }))
+  t.notOk(match({a: 'Symbol(a)' }, { a: Symbol('a') }))
+  t.notOk(match({a: 'Symbol(a)' }, { a: Symbol.for('a') }))
+  t.notOk(match({a: 'Symbol(a)' }, { a: Symbol }))
+  t.end()
+})

@@ -114,6 +114,8 @@ function match_ (obj, pattern, ca, cb) {
     : true
   )
   : obj === null || pattern === null ? false
+  : typeof pattern === 'symbol' ?
+    typeof obj === 'symbol' && obj.toString() === pattern.toString()
   : pattern instanceof RegExp ? (
     typeof obj === 'string' ? pattern.test(obj)
     : obj instanceof RegExp ? regexpSame(obj, pattern)
@@ -135,6 +137,7 @@ function match_ (obj, pattern, ca, cb) {
     typeof obj === 'number' && obj === obj && isFinite(obj)
   : pattern !== pattern ? obj !== obj
   : pattern === String ? typeof obj === 'string'
+  : pattern === Symbol ? typeof obj === 'symbol'
   : pattern === Boolean ? typeof obj === 'boolean'
   : pattern === Array ? Array.isArray(obj)
   : typeof pattern === 'function' && typeof obj === 'object' ?
