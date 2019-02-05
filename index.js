@@ -20,14 +20,12 @@ function arrayFrom (obj) {
     : Array.prototype.slice.call(obj)
 }
 
-var hasSet = typeof Set === 'function'
-
 function isSet (object) {
-  return hasSet && (object instanceof Set)
+  return object instanceof Set
 }
 
 function isMap (object) {
-  return hasSet && (object instanceof Map)
+  return object instanceof Map
 }
 
 function bufferSame (a, b) {
