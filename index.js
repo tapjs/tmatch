@@ -16,8 +16,7 @@ function regexpSame (a, b) {
 
 function arrayFrom (obj) {
   return Array.isArray(obj) ? obj
-    : Array.from ? Array.from(obj)
-    : Array.prototype.slice.call(obj)
+    : Array.from(obj)
 }
 
 function isSet (object) {
