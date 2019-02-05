@@ -148,18 +148,22 @@ function match_ (obj, pattern, ca, cb) {
     : 'COMPLEX'
   )
 
-  if (simpleMatch === 'COMPLEX') {
-    return isSet(pattern) ? setMatch(obj, pattern, ca, cb)
-      : isMap(pattern) ? mapMatch(obj, pattern, ca, cb)
-      : matchObj(obj, pattern, Object.keys(obj), Object.keys(pattern), ca, cb)
-  }
-
-  // TODO: track path for diffing
-  return simpleMatch
+  return simpleMatch === 'COMPLEX'
+    ? matchCollection(obj, pattern, ca, cb)
+    : simpleMatch
 }
 
-function matchObj (obj, pattern, kobj, kpat, ca, cb) {
+function matchCollection (obj, pattern, ca, cb) {
+  return isSet(pattern) ? setMatch(obj, pattern, ca, cb)
+    : isMap(pattern) ? mapMatch(obj, pattern, ca, cb)
+    : matchObj(obj, pattern, ca, cb)
+}
+
+function matchObj (obj, pattern, ca, cb) {
   var ret = true
+
+  const kobj = Object.keys(obj)
+  const kpat = Object.keys(pattern)
 
   // don't bother with stack acrobatics if there's nothing there
   if (kobj.length === 0 && kpat.length === 0)
