@@ -106,46 +106,56 @@ function mapMatch (obj, pattern, ca, cb) {
 
 
 function match_ (obj, pattern, ca, cb) {
-  return obj == pattern ? (
-    obj === null || pattern === null ? true
-    : typeof obj === 'object' && typeof pattern === 'object' ? true
-    : typeof obj === 'object' && typeof pattern !== 'object' ? false
-    : typeof obj !== 'object' && typeof pattern === 'object' ? false
-    : true
+
+  const simpleMatch = (
+    obj == pattern ? (
+      obj === null || pattern === null ? true
+      : typeof obj === 'object' && typeof pattern === 'object' ? true
+      : typeof obj === 'object' && typeof pattern !== 'object' ? false
+      : typeof obj !== 'object' && typeof pattern === 'object' ? false
+      : true
+    )
+    : obj === null || pattern === null ? false
+    : typeof pattern === 'symbol' ?
+      typeof obj === 'symbol' && obj.toString() === pattern.toString()
+    : pattern instanceof RegExp ? (
+      typeof obj === 'string' ? pattern.test(obj)
+      : obj instanceof RegExp ? regexpSame(obj, pattern)
+      : pattern.test('' + obj)
+    )
+    : typeof obj === 'string' && typeof pattern === 'string' && pattern ?
+      obj.indexOf(pattern) !== -1
+    : obj instanceof Date && pattern instanceof Date ?
+      obj.getTime() === pattern.getTime()
+    : obj instanceof Date && typeof pattern === 'string' ?
+      obj.getTime() === new Date(pattern).getTime()
+    : isArguments(obj) || isArguments(pattern) ?
+      match_(arrayFrom(obj), arrayFrom(pattern), ca, cb)
+    : pattern === Buffer ? Buffer.isBuffer(obj)
+    : pattern === Function ? typeof obj === 'function'
+    : pattern === Number ?
+      typeof obj === 'number' && obj === obj && isFinite(obj)
+    : pattern !== pattern ? obj !== obj
+    : pattern === String ? typeof obj === 'string'
+    : pattern === Symbol ? typeof obj === 'symbol'
+    : pattern === Boolean ? typeof obj === 'boolean'
+    : pattern === Array ? Array.isArray(obj)
+    : typeof pattern === 'function' && typeof obj === 'object' ?
+      obj instanceof pattern
+    : typeof obj !== 'object' || typeof pattern !== 'object' ? false
+    : Buffer.isBuffer(obj) && Buffer.isBuffer(pattern) ?
+      bufferSame(obj, pattern)
+    : 'COMPLEX'
   )
-  : obj === null || pattern === null ? false
-  : typeof pattern === 'symbol' ?
-    typeof obj === 'symbol' && obj.toString() === pattern.toString()
-  : pattern instanceof RegExp ? (
-    typeof obj === 'string' ? pattern.test(obj)
-    : obj instanceof RegExp ? regexpSame(obj, pattern)
-    : pattern.test('' + obj)
-  )
-  : typeof obj === 'string' && typeof pattern === 'string' && pattern ?
-    obj.indexOf(pattern) !== -1
-  : obj instanceof Date && pattern instanceof Date ?
-    obj.getTime() === pattern.getTime()
-  : obj instanceof Date && typeof pattern === 'string' ?
-    obj.getTime() === new Date(pattern).getTime()
-  : isArguments(obj) || isArguments(pattern) ?
-    match_(arrayFrom(obj), arrayFrom(pattern), ca, cb)
-  : pattern === Buffer ? Buffer.isBuffer(obj)
-  : pattern === Function ? typeof obj === 'function'
-  : pattern === Number ?
-    typeof obj === 'number' && obj === obj && isFinite(obj)
-  : pattern !== pattern ? obj !== obj
-  : pattern === String ? typeof obj === 'string'
-  : pattern === Symbol ? typeof obj === 'symbol'
-  : pattern === Boolean ? typeof obj === 'boolean'
-  : pattern === Array ? Array.isArray(obj)
-  : typeof pattern === 'function' && typeof obj === 'object' ?
-    obj instanceof pattern
-  : typeof obj !== 'object' || typeof pattern !== 'object' ? false
-  : Buffer.isBuffer(obj) && Buffer.isBuffer(pattern) ?
-    bufferSame(obj, pattern)
-  : isSet(pattern) ? setMatch(obj, pattern, ca, cb)
-  : isMap(pattern) ? mapMatch(obj, pattern, ca, cb)
-  : matchObj(obj, pattern, Object.keys(obj), Object.keys(pattern), ca, cb)
+
+  if (simpleMatch === 'COMPLEX') {
+    return isSet(pattern) ? setMatch(obj, pattern, ca, cb)
+      : isMap(pattern) ? mapMatch(obj, pattern, ca, cb)
+      : matchObj(obj, pattern, Object.keys(obj), Object.keys(pattern), ca, cb)
+  }
+
+  // TODO: track path for diffing
+  return simpleMatch
 }
 
 function matchObj (obj, pattern, kobj, kpat, ca, cb) {
